@@ -1,0 +1,250 @@
+#compdef _quarto quarto
+
+function _quarto {
+    local line
+
+    function _commands {
+        local -a commands
+        commands=(
+            'render:Render files or projects to various document types.'
+            'preview:Render and preview a document or website project.'
+            'serve:Serve a Shiny interactive document.'
+            #'create:Create a Quarto project or extension'
+            'create-project:Create a project for rendering multiple documents'
+            'convert:Convert documents to alternate representations.'
+            'pandoc:Run the version of Pandoc embedded within Quarto.'
+            'run:Run a TypeScript, R, Python, or Lua script.'
+            #'add:Add an extension to this folder or project'
+            'install:Installs an extension or global dependency.'
+            'publish:Publish a document or project. Available providers include:'
+            'check:Verify correct functioning of Quarto installation.'
+            'help:Show this help or the help of a sub-command.'
+        )
+        _describe 'command' commands
+    }
+
+    _arguments -C \
+        "-h[Show help]" \
+        "--help[Show help]" \
+        "-V[Show version info]" \
+        "--version[Show version info]" \
+        "1: :_commands" \
+        "*::arg:->args"
+
+        case $line[1] in
+            render)
+                _quarto_render
+                ;;
+            preview)
+                _quarto_preview
+                ;;
+            serve)
+                _quarto_serve
+                ;;
+            create-project)
+                _quarto_create_project
+                ;;
+            convert)
+                _quarto_convert
+                ;;
+            pandoc)
+                _quarto_pandoc
+                ;;
+            run)
+                _quarto_run
+                ;;
+            install)
+                _quarto_install
+                ;;
+            publish)
+                _quarto_publish
+                ;;
+            check)
+                _quarto_check
+                ;;
+            help)
+                _quarto_help
+                ;;
+        esac
+}
+
+## TODO: add at least some format options
+function _format {
+    local -a formats
+    formats=(
+        "html:HTML document"
+        "pdf:PDF document"
+        "docx:MS Word document"
+        "odt:OpenOffice document"
+        "epub:ePub ebook format"
+        "revealjs:Revealjs HTML presentation"
+        "pptx:PowerPoint presentation"
+        "beamer:LaTeX Beamer PDF presentation"
+        "gfm:Github Flavored Markdown"
+        "commonmark:CommonMark Markdown"
+        "markua:Markua Markdown"
+        "mediawiki:MediaWiki format"
+        "dokuwiki:DokuWiki format"
+        "zimwiki:Zim editor format"
+        "jira:JiraWiki format"
+        "xwiki:XWiki format"
+        "ipynb:Jupyter notebook"
+        "context:ConTeXt"
+    )
+    _describe 'format' formats
+}
+
+function _quarto_render {
+    _arguments \
+        "-h[Show this help.]" \
+        "--help[Show this help.]" \
+        "-t[Specify output format(s).]:format:_format" \
+        "--to[Specify output format(s).]:format:_format" \
+        "-o[Write output to FILE (use '--output -' for stdout).]:filename:_files" \
+        "--output[Write output to FILE (use '--output -' for stdout).]:filename:_files" \
+        "--output-dir[Write project output to DIR (path is project relative)]:directory:_path_files -/" \
+        "-M[Metadata value (KEY:VALUE).]" \
+        "--metadata[Metadata value (KEY:VALUE).]" \
+        "--site-url[Override site-url for website or book ouptut]" \
+        "--execute[Execute code (--no-execute to skip execution).]" \
+        "-P[Execution parameter (KEY:VALUE).]" \
+        "--execute-param[Execution parameter (KEY:VALUE).]" \
+        "--execute-params[YAML file with execution parameters.]" \
+        "--execute-dir[Working directory for code execution.]" \
+        "--execute-daemon[Keep Jupyter kernel alive (defaults to 300 seconds).]" \
+        "--execute-daemon-restart[Restart keepalive Jupyter kernel before render.]" \
+        "--execute-debug[Show debug output for Jupyter kernel.]" \
+        "--use-freezer[Force use of frozen computations for an incremental file render.]" \
+        "--cache[Cache execution output (--no-cache to prevent cache).]" \
+        "--cache-refresh[Force refresh of execution cache.]" \
+        "--no-clean[Do not clean project output-dir prior to render]" \
+        "--debug[Leave intermediate files in place after render.]" \
+        "--quiet[Suppress console output.]" \
+        "*:file:_files -g'*.(qmd|ipynb)'"
+}
+
+function _quarto_preview {
+    _arguments \
+        "-h[Show this help.]" \
+        "--help[Show this help.]" \
+        "--port[Suggested port to listen on (defaults to random value between 3000 and 8000).]" \
+        "--host[Hostname to bind to (defaults to 127.0.0.1)]" \
+        "--render[Render to the specified format(s) before previewing (Default: "none")]:format:_format" \
+        "--no-navigate[Don't navigate the browser automatically when outputs are updated.]" \
+        "--no-browser[Don't open a browser to preview the site.]" \
+        "--no-watch-inputs[Do not re-render input files when they change.]" \
+        "--timeout[Time (in seconds) after which to exit if there are no active clients.]" \
+        "--quiet[Suppress console output.]" \
+        "*:file:_files -g'*.(qmd|ipynb)'"
+}
+
+function _quarto_serve {
+    _arguments \
+        "-h[Show this help.]" \
+        "--help[Show this help.]" \
+        "--no-render[Do not render the document before serving.]" \
+        "-p[The TCP port that the application should listen on.]" \
+        "--port[The TCP port that the application should listen on.]" \
+        "--host[Hostname to bind to (defaults to 127.0.0.1)]" \
+        "--quiet[Suppress console output.]" \
+        "*:file:_files -g'*.(qmd|ipynb)'"
+}
+
+## TODO: add options
+function _project_type {
+    local -a types
+    types=(
+        "default:Default project type"
+        "book:Book project"
+        "website:Website project"
+    )
+    _describe "project type" types
+}
+
+function _engine {
+    local -a engines
+    engines=(
+        "markdown:No executable cells"
+        "jupyter:Use Jupyter to run code"
+        "knitr:Use Knitr to run code"
+    )
+    _describe "engine" engines
+}
+
+function _quarto_create_project {
+    _arguments \
+        "-h[Show this help.]" \
+        "--help[Show this help.]" \
+        "--title[Project title]" \
+        "--type[Project type (book, default, website)]:type:_project_type" \
+        "--template[Use a specific project template]" \
+        "--engine[Use execution engine (markdown, jupyter, knitr)]:engine:_engine" \
+        "--editor[Default editor for project ('source' or 'visual')]" \
+        "--with-venv[Create a virtualenv for this project]" \
+        "--with-condaenv[Create a condaenv for this project]" \
+        "--no-scaffold[Don't create initial project file(s)]" \
+        "--quiet[Suppress console output.]" \
+        "*:file:_path_files -/"
+}
+
+function _quarto_convert {
+    _arguments \
+        "-h[Show this help.]" \
+        "--help[Show this help.]" \
+        "-o[Write output to PATH.]" \
+        "--output[Write output to PATH.]" \
+        "--with-ids[Include ids in conversion]" \
+        "--quiet[Suppress console output.]"
+}
+
+function _quarto_pandoc {
+    _arguments \
+        "-h[Show this help.]" \
+        "--help[Show this help.]" \
+        "--quiet[Suppress console output.]"
+}
+
+function _quarto_run {
+    _arguments \
+        "-h[Show this help.]" \
+        "--help[Show this help.]" \
+        "--quiet[Suppress console output.]"
+}
+
+function _quarto_install {
+    _arguments \
+        "-h[Show this help.]" \
+        "--help[Show this help.]" \
+        "--no-prompt[Do not prompt to confirm actions]" \
+        "--embed[Embed this extension within another extension (used when authoring extensions).]" \
+        "--quiet[Suppress console output.]"
+}
+
+function _quarto_publish {
+    _arguments \
+        "-h[Show this help.]" \
+        "--help[Show this help.]" \
+        "--id[Identifier of content to publish]" \
+        "--server[Server to publish to]" \
+        "--token[Access token for publising provider]" \
+        "--no-render[Do not render before publishing.]" \
+        "--no-prompt[Do not prompt to confirm publishing destination]" \
+        "--no-browser[Do not open a browser to the site after publishing]" \
+        "--quiet[Suppress console output.]"
+}
+
+function _quarto_check {
+    _arguments \
+        "-h[Show this help.]" \
+        "--help[Show this help.]" \
+        "--quiet[Suppress console output.]"
+}
+
+function _quarto_help {
+    _arguments \
+        "-h[Show this help.]" \
+        "--help[Show this help.]" \
+        "*:command:_commands"
+}
+
+
